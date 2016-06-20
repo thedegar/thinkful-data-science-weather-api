@@ -40,20 +40,19 @@ with con:
     # Create the cities and weather tables
     cur.execute("DROP TABLE IF EXISTS temp")
     cur.execute("DROP TABLE IF EXISTS cities")
-    cur.execute("CREATE TABLE temp (city text, date text, max_temp text)")
+    cur.execute("CREATE TABLE temp (city text, date text, max_temp float)")
     cur.execute("CREATE TABLE cities (city text, coordinates text)")
     
     cur.executemany("INSERT INTO cities VALUES(?,?)", cities_tup)
 
-
     for each in cities:
-        for day in range(1,31):
+        for day in range(1,days+1):
             date = dt - datetime.timedelta(days=day)
             ts = date.strftime('%Y-%m-%dT%H:%M:%S')
             api = 'https://api.forecast.io/forecast/'+key+'/'+cities[each]+','+ts
             city = each
             r = requests.get(api)
-            temp = str(r.json()['daily']['data'][0]['temperatureMax'])
+            temp = r.json()['daily']['data'][0]['temperatureMax']
             data = (city, ts, temp)
             cur.execute("INSERT INTO temp VALUES(?,?,?)", data)
 
@@ -62,4 +61,7 @@ with con:
     cols = [desc[0] for desc in cur.description]
     df = pd.DataFrame(rows, columns=cols)
 
-print(df)
+for each in cities:
+    condition = (df['city'] == each)
+    avg = df[condition]['max_temp'].mean()
+    print("The avg max_temp for {} is {} deg F.".format(each, avg))

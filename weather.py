@@ -10,25 +10,21 @@ import requests
 import sqlite3 as lite
 import pandas as pd
 
+
 # Connect to the database
 con = lite.connect('weather.db')
 
 # Data for API
-cities = {"Atlanta": '33.762909,-84.422675',
-          "Austin": '30.303936,-97.754355',
-          "Boston": '42.331960,-71.020173',
-          "Chicago": '41.837551,-87.681844',
-          "Cleveland": '41.478462,-81.679435'
-          }
-          
-cities_tup = (
-    ("Atlanta", '33.762909,-84.422675'),
-    ("Austin", '30.303936,-97.754355'),
-    ("Boston", '42.331960,-71.020173'),
-    ("Chicago", '41.837551,-87.681844'),
-    ("Cleveland", '41.478462,-81.679435')
-    )
-          
+cities = {
+    "Atlanta": '33.762909,-84.422675',
+    "Austin": '30.303936,-97.754355',
+    "Boston": '42.331960,-71.020173',
+    "Chicago": '41.837551,-87.681844',
+    "Cleveland": '41.478462,-81.679435'
+    }
+        
+cities_tup = tuple(cities.iteritems())
+
 key = 'f62d357ad457ae6460a6f2c3b9091653'
 dt = datetime.datetime.now()
 days = 30
@@ -63,5 +59,13 @@ with con:
 
 for each in cities:
     condition = (df['city'] == each)
-    avg = df[condition]['max_temp'].mean()
-    print("The avg max_temp for {} is {} deg F.".format(each, avg))
+    data = df[condition]['max_temp']
+    avg = data.mean()
+    min = data.min()
+    max = data.max()
+    range = max - min
+    var = data.var()
+    print("For {} the descriptive statistics are: ".format(each))
+    print("  Mean = {}".format(avg))
+    print("  Range = {}".format(range))
+    print("  Variance = {}".format(var))
